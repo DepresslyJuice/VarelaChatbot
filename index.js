@@ -18,6 +18,11 @@ const client = new ModelClient(
   new AzureKeyCredential(process.env.AZURE_INFERENCE_SDK_KEY)
 );
 
+app.get('/status', (req, res) => {
+  res.send('Bot corriendo ✔️');
+});
+
+
 // Ruta que Telegram llamará
 app.post('/webhook', (req, res) => {
   bot.processUpdate(req.body);
