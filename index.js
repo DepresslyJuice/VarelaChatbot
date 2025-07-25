@@ -9,36 +9,31 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
-// Validate required environment variables
-if (!process.env.TELEGRAM_BOT_TOKEN) {
-  console.error('TELEGRAM_BOT_TOKEN is required');
-  process.exit(1);
-}
+// Set default values if environment variables are not set
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8018145264:AAH3RQkd_KWqbTP3KoCoRS9f_OdLk1pifMA';
+const AZURE_INFERENCE_SDK_ENDPOINT = process.env.AZURE_INFERENCE_SDK_ENDPOINT || 'https://jdvarelac-1909-resource.services.ai.azure.com/models';
+const AZURE_INFERENCE_SDK_KEY = process.env.AZURE_INFERENCE_SDK_KEY || '2SYvekF9Ek14CppV5OkbZNgbI1GhseGs3iLQj3KYTr3dFVrGFLq1JQQJ99BGACHYHv6XJ3w3AAAAACOGzAlb';
+const DEPLOYMENT_NAME = process.env.DEPLOYMENT_NAME || 'Phi-4-mini-instruct';
+const APP_URL = process.env.APP_URL || 'https://chatbotvarela-fqcyg8g7hfhtbbbk.westus-01.azurewebsites.net';
 
-if (!process.env.AZURE_INFERENCE_SDK_ENDPOINT) {
-  console.error('AZURE_INFERENCE_SDK_ENDPOINT is required');
-  process.exit(1);
-}
+console.log('Environment variables loaded:', {
+  TELEGRAM_BOT_TOKEN: TELEGRAM_BOT_TOKEN ? 'SET' : 'NOT SET',
+  AZURE_INFERENCE_SDK_ENDPOINT: AZURE_INFERENCE_SDK_ENDPOINT ? 'SET' : 'NOT SET',
+  AZURE_INFERENCE_SDK_KEY: AZURE_INFERENCE_SDK_KEY ? 'SET' : 'NOT SET',
+  DEPLOYMENT_NAME: DEPLOYMENT_NAME ? 'SET' : 'NOT SET',
+  APP_URL: APP_URL ? 'SET' : 'NOT SET'
+});
 
-if (!process.env.AZURE_INFERENCE_SDK_KEY) {
-  console.error('AZURE_INFERENCE_SDK_KEY is required');
-  process.exit(1);
-}
+const bot = new TelegramBot(TELEGRAM_BOT_TOKEN);
 
-const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN);
-
-// Set webhook only if APP_URL is provided
-if (process.env.APP_URL) {
-  bot.setWebHook(`${process.env.APP_URL}/webhook`);
-  console.log(`Webhook set to: ${process.env.APP_URL}/webhook`);
-} else {
-  console.log('APP_URL not set, webhook not configured');
-}
+// Set webhook
+bot.setWebHook(`${APP_URL}/webhook`);
+console.log(`Webhook set to: ${APP_URL}/webhook`);
 
 // Azure client
 const client = new ModelClient(
-  process.env.AZURE_INFERENCE_SDK_ENDPOINT,
-  new AzureKeyCredential(process.env.AZURE_INFERENCE_SDK_KEY)
+  AZURE_INFERENCE_SDK_ENDPOINT,
+  new AzureKeyCredential(AZURE_INFERENCE_SDK_KEY)
 );
 
 app.get('/', (req, res) => {
@@ -68,7 +63,7 @@ bot.on('message', async (msg) => {
           { role: 'system', content: 'You are a helpful assistant.' },
           { role: 'user', content: userText },
         ],
-        model: process.env.DEPLOYMENT_NAME,
+        model: DEPLOYMENT_NAME,
         max_tokens: 500,
       },
     });
