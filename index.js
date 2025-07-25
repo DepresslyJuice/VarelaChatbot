@@ -26,15 +26,25 @@ console.log('Environment variables loaded:', {
 
 const bot = new TelegramBot(TELEGRAM_BOT_TOKEN);
 
-// Set webhook
-bot.setWebHook(`${APP_URL}/webhook`);
-console.log(`Webhook set to: ${APP_URL}/webhook`);
-
 // Azure client
 const client = new ModelClient(
   AZURE_INFERENCE_SDK_ENDPOINT,
   new AzureKeyCredential(AZURE_INFERENCE_SDK_KEY)
 );
+
+// Initialize webhook asynchronously
+async function initializeWebhook() {
+  try {
+    await bot.setWebHook(`${APP_URL}/webhook`);
+    console.log(`Webhook set to: ${APP_URL}/webhook`);
+  } catch (error) {
+    console.error('Error setting webhook:', error.message);
+    console.log('Continuing without webhook...');
+  }
+}
+
+// Call webhook initialization
+initializeWebhook();
 
 app.get('/', (req, res) => {
   res.send('Telegram Bot is running! ✔️');
